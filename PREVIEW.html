@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGestione Rep 2026 - Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .device-frame {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .device-title {
+            padding: 16px;
+            background: #1e3a8a;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .device-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER STYLE */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #f5f7fa;
+        }
+
+        .content-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-box h3 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .content-box p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* MODAL OVERLAY */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .qr-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .qr-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .qr-description {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .pwa-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .pwa-btn {
+            padding: 16px 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .pwa-btn svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .pwa-btn-android {
+            background: linear-gradient(135deg, #3ddc84 0%, #2bb859 100%);
+            color: white;
+        }
+
+        .pwa-btn-android:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(45, 184, 89, 0.3);
+        }
+
+        .pwa-btn-ios {
+            background: linear-gradient(135deg, #555555 0%, #222222 100%);
+            color: white;
+        }
+
+        .pwa-btn-ios:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ASSISTANT PANEL */
+        .assistant-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 550px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 900;
+        }
+
+        .assistant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .assistant-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .assistant-title svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .quick-suggestion {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .quick-suggestion-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #60a5fa;
+            color: #1e3a8a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-suggestion-btn:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            transform: translateY(-2px);
+        }
+
+        .quick-suggestion-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .chat-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 12px;
+            min-height: 80px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .send-btn {
+            width: 100%;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .send-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border-radius: 10px 4px 10px 10px;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 4px 10px 10px 10px;
+        }
+
+        .label {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .demo-info {
+            text-align: center;
+            padding: 20px;
+            background: #fffbeb;
+            border-top: 1px solid #fcd34d;
+        }
+
+        .demo-info p {
+            font-size: 13px;
+            color: #92400e;
+            margin: 5px 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e3a8a;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 iGestione Rep 2026 - Preview Interattiva</h1>
+
+    <div class="preview-container">
+        <!-- PREVIEW 1: HEADER CON QR BUTTON -->
+        <div class="device-frame">
+            <div class="device-title">📱 Desktop View - Header</div>
+            <div class="device-content">
+                <div class="header">
+                    <div class="logo">iGestione Rep 2026</div>
+                    <div class="header-actions">
+                        <button class="header-btn">📊 Statistiche</button>
+                        <button class="header-btn" onclick="toggleQRModal()">🔲 Scarica App</button>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="content-box">
+                        <h3>✅ Benvenuto nel sistema</h3>
+                        <p>Questo è il nuovo layout dell'applicazione con il pulsante QR Code header semplificato.</p>
+                    </div>
+                    <div class="content-box">
+                        <h3>🎯 Nuove Funzionalità</h3>
+                        <p>• Pop-up QR Code con pulsanti PWA<br>• Assistente Virtuale potenziato<br>• Suggerimento Rapido integrato<br>• Design responsive e moderno</p>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-info">
+                <p>⬆️ Clicca su "Scarica App" per aprire il modal</p>
+            </div>
+        </div>
+
+        <!-- PREVIEW 2: QR CODE MODAL -->
+        <div class="device-frame">
+            <div class="device-title">🎯 QR Code Modal</div>
+            <div class="device-content">
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <div class="qr-modal" style="position: static;">
+                        <button class="modal-close">×</button>
+                        
+                        <div class="qr-section">
+                            <h2>Scarica l'App</h2>
+                            <p class="qr-description">Scansiona il codice QR per installare l'app</p>
+                            <div class="qr-placeholder">📲 QR Code qui</div>
+                        </div>
+
+                        <h3 style="font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 12px; color: #333;">Installazione Diretta</h3>
+
+                        <div class="pwa-buttons">
+                            <button class="pwa-btn pwa-btn-android">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5S11.5 23.33 11.5 22.5V19h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zm3.5-9c.83 0 1.5-.67 1.5-1.5S10.33 6 9.5 6 8 6.67 8 7.5 8.67 9 9.5 9zm5 0c.83 0 1.5-.67 1.5-1.5S15.33 6 14.5 6 13 6.67 13 7.5 13.67 9 14.5 9zM5.5 9c0-.83-.67-1.5-1.5-1.5S2.5 8.17 2.5 9v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V9zm13 0c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                                Installa su Android
+                            </button>
+                            <button class="pwa-btn pwa-btn-ios">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-8L4.992 8H2v12c0 1.105.895 2 2 2h16c1.105 0 2-.895 2-2V4c0-1.105-.895-2-2-2zm-3.5 19c-2.485 0-4.5-2.015-4.5-4.5S12.015 12 14.5 12s4.5 2.015 4.5 4.5-2.015 4.5-4.5 4.5zm3.5-9h-2v-2h2v2z"/></svg>
+                                Installa su iOS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-info">
+                <p>✨ Pop-up per l'installazione PWA da smartphone</p>
+            </div>
+        </div>
+
+        <!-- PREVIEW 3: ASSISTENTE VIRTUALE CHIUSO -->
+        <div class="device-frame">
+            <div class="device-title">💬 Assistente Virtuale - Closed</div>
+            <div class="device-content">
+                <div class="header">
+                    <div class="logo">iGestione Rep 2026</div>
+                    <div class="header-actions">
+                        <button class="header-btn">🔲 Scarica App</button>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="content-box">
+                        <h3>Contenuto Principale</h3>
+                        <p>L'assistente virtuale è posizionato in basso a destra e può essere aperto al bisogno.</p>
+                    </div>
+                </div>
+                <div style="position: absolute; bottom: 20px; right: 20px; width: 50px; height: 50px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); font-size: 24px;" onclick="toggleAssistant()">💬</div>
+            </div>
+            <div class="demo-info">
+                <p>⬇️ Clicca sul pulsante 💬 in basso a destra</p>
+            </div>
+        </div>
+
+        <!-- PREVIEW 4: ASSISTENTE VIRTUALE APERTO -->
+        <div class="device-frame">
+            <div class="device-title">💬 Assistente Virtuale - Open</div>
+            <div class="device-content">
+                <div class="header" style="position: relative; z-index: 10;">
+                    <div class="logo">iGestione Rep 2026</div>
+                    <div class="header-actions">
+                        <button class="header-btn">🔲 Scarica App</button>
+                    </div>
+                </div>
+                <div style="flex: 1; position: relative;">
+                    <div class="main-content">
+                        <div class="content-box">
+                            <h3>Contenuto Principale</h3>
+                            <p>Dietro all'assistente virtuale</p>
+                        </div>
+                    </div>
+                    
+                    <div class="assistant-panel" style="position: absolute; width: 95%; right: 8px; bottom: 8px; height: auto; max-height: 85%;">
+                        <div class="assistant-header">
+                            <h2 class="assistant-title">💬 Assistente Virtuale</h2>
+                            <button class="close-btn">×</button>
+                        </div>
+
+                        <div class="quick-suggestion">
+                            <button class="quick-suggestion-btn">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                Suggerimento Rapido
+                            </button>
+                        </div>
+
+                        <div class="chat-section">
+                            <textarea class="message-input" placeholder="Scrivi il tuo messaggio qui..."></textarea>
+                            <button class="send-btn">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16256983 C3.34915502,0.9054724 2.40734225,1.01609346 1.77946707,1.4873856 C0.994623095,2.11683127 0.837654326,3.20750074 1.15159189,3.99299767 L3.03521743,10.4339905 C3.03521743,10.5910879 3.34915502,10.7481853 3.50612381,10.7481853 L16.6915026,11.5336722 C16.6915026,11.5336722 17.1624089,11.5336722 17.1624089,12.0049643 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z"/></svg>
+                                Invia
+                            </button>
+                        </div>
+
+                        <div class="messages-area">
+                            <div class="message assistant">Ciao! Come posso aiutarti oggi?</div>
+                            <div class="message user">Mi serve aiuto con le statistiche</div>
+                            <div class="message assistant">Perfetto! Puoi visualizzare le statistiche cliccando il pulsante "Statistiche" nell'header. Vuoi altre informazioni?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-info">
+                <p>✨ Pannello assistente ingrandito e funzionale</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleQRModal() {
+            alert('🎯 QR Code Modal aperto! \n\nIn questo modal l\'utente può:\n• Scansionare il codice QR\n• Installare su Android (Google Play)\n• Installare su iOS (App Store)');
+        }
+
+        function toggleAssistant() {
+            alert('💬 Assistente Virtuale aperto! \n\nFunzionalità:\n• Suggerimento Rapido integrato\n• Chat bidirezionale\n• Pulsante X di chiusura\n• Form ampliato');
+        }
+    </script>
+</body>
+</html>
