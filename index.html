@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Sistema di smistamento e monitoraggio interventi">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="iGestione Rep">
+    <title>iGestione Rep 2026 - Sistema di Monitoraggio Interventi</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/qrcode.vue@3"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        /* HEADER STYLES */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 16px;
+            }
+        }
+
+        .logo {
+            text-decoration: none;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo:hover {
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        @media (max-width: 480px) {
+            .header-actions {
+                gap: 8px;
+            }
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .header-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .header-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 480px) {
+            .header-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .header-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .btn-label {
+                display: none;
+            }
+        }
+
+        .header-btn-qr {
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* APP CONTAINER */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 12px;
+            }
+        }
+
+        /* QR CODE MODAL */
+        .qr-code-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .qr-code-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .qr-code-modal {
+                padding: 24px;
+                max-width: 100%;
+                margin: 16px;
+            }
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: #666;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-close-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qr-code-section {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .qr-code-section h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+
+        .qr-description {
+            color: #666;
+            font-size: 14px;
+            margin: 0 0 24px 0;
+        }
+
+        .qr-code-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+        }
+
+        .qr-code-container svg {
+            width: 250px;
+            height: 250px;
+            max-width: 100%;
+        }
+
+        .pwa-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .pwa-buttons-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .pwa-buttons-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pwa-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 100px;
+            justify-content: center;
+        }
+
+        .pwa-btn .pwa-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .pwa-btn span {
+            line-height: 1.2;
+        }
+
+        .pwa-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .pwa-btn:active {
+            transform: translateY(0);
+        }
+
+        .pwa-btn-android {
+            background: linear-gradient(135deg, #3ddc84 0%, #2bb859 100%);
+            color: white;
+            border: 2px solid #2bb859;
+        }
+
+        .pwa-btn-android:hover {
+            background: linear-gradient(135deg, #4ede98 0%, #23a14f 100%);
+        }
+
+        .pwa-btn-ios {
+            background: linear-gradient(135deg, #555555 0%, #222222 100%);
+            color: white;
+            border: 2px solid #222222;
+        }
+
+        .pwa-btn-ios:hover {
+            background: linear-gradient(135deg, #666666 0%, #111111 100%);
+        }
+
+        /* VIRTUAL ASSISTANT */
+        .virtual-assistant-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 500px;
+            max-width: 90vw;
+            height: 700px;
+            max-height: 90vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 900;
+            animation: slideUp 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .virtual-assistant-panel {
+                width: calc(100vw - 32px);
+                height: calc(100vh - 100px);
+                bottom: 80px;
+                right: 16px;
+                left: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .virtual-assistant-panel {
+                width: calc(100vw - 16px);
+                height: calc(100vh - 80px);
+                bottom: 60px;
+                right: 8px;
+                left: 8px;
+                border-radius: 12px;
+            }
+        }
+
+        .slide-up-enter-active,
+        .slide-up-leave-active {
+            transition: all 0.3s ease;
+        }
+
+        .slide-up-enter-from,
+        .slide-up-leave-to {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        .assistant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .assistant-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        .assistant-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        .assistant-title h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .close-btn:active {
+            transform: scale(0.95);
+        }
+
+        .quick-suggestion-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .quick-suggestion-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #60a5fa;
+            color: #1e3a8a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-suggestion-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .quick-suggestion-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .quick-suggestion-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .quick-suggestion-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .chat-section {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .chat-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .message-input::placeholder {
+            color: #999;
+        }
+
+        .send-btn {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .messages-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border-radius: 12px 4px 12px 12px;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 4px 12px 12px 12px;
+        }
+
+        .assistant-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+            z-index: 800;
+        }
+
+        .assistant-toggle-btn svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .assistant-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+        }
+
+        .assistant-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .assistant-toggle-btn {
+                width: 50px;
+                height: 50px;
+            }
+
+            .assistant-toggle-btn svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* DEMO CONTENT */
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-section h2 {
+            color: #1e3a8a;
+            margin-bottom: 16px;
+            font-size: 22px;
+        }
+
+        .content-section h3 {
+            color: #2563eb;
+            margin: 16px 0 8px 0;
+            font-size: 16px;
+        }
+
+        .content-section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #666;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #2bb859;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-container">
+                <div class="logo">iGestione Rep 2026</div>
+                <div class="header-actions">
+                    <button class="header-btn" @click="goToStats" aria-label="Visualizza statistiche">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+                        <span class="btn-label">Statistiche</span>
+                    </button>
+                    <button class="header-btn header-btn-qr" @click="openQRModal" aria-label="Scarica app tramite QR Code" title="Scansiona per installare l'app">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13-2h-2v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+                        <span class="btn-label">Scarica App</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- QR Code Modal -->
+        <transition name="fade">
+            <div v-if="isQRModalOpen" class="qr-code-modal-overlay" @click="closeQRModal">
+                <div class="qr-code-modal" @click.stop>
+                    <button class="modal-close-btn" @click="closeQRModal" aria-label="Chiudi popup QR Code">×</button>
+
+                    <div class="qr-code-section">
+                        <h2>Scarica l'App</h2>
+                        <p class="qr-description">Scansiona il codice QR per installare l'app</p>
+                        <div class="qr-code-container">
+                            <qrcode-vue :value="qrCodeUrl" :size="250" level="H" render-as="svg"></qrcode-vue>
+                        </div>
+                    </div>
+
+                    <div class="pwa-section">
+                        <h3>Installazione Diretta</h3>
+                        <div class="pwa-buttons-container">
+                            <button class="pwa-btn pwa-btn-android" @click="handleAndroidInstall" aria-label="Installa app su Android">
+                                <svg class="pwa-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5S11.5 23.33 11.5 22.5V19h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zm3.5-9c.83 0 1.5-.67 1.5-1.5S10.33 6 9.5 6 8 6.67 8 7.5 8.67 9 9.5 9zm5 0c.83 0 1.5-.67 1.5-1.5S15.33 6 14.5 6 13 6.67 13 7.5 13.67 9 14.5 9zM5.5 9c0-.83-.67-1.5-1.5-1.5S2.5 8.17 2.5 9v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V9zm13 0c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                                <span>Installa su Android</span>
+                            </button>
+
+                            <button class="pwa-btn pwa-btn-ios" @click="handleIOSInstall" aria-label="Installa app su iOS">
+                                <svg class="pwa-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-8L4.992 8H2v12c0 1.105.895 2 2 2h16c1.105 0 2-.895 2-2V4c0-1.105-.895-2-2-2zm-3.5 19c-2.485 0-4.5-2.015-4.5-4.5S12.015 12 14.5 12s4.5 2.015 4.5 4.5-2.015 4.5-4.5 4.5zm3.5-9h-2v-2h2v2z"/></svg>
+                                <span>Installa su iOS</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="demo-container">
+                <div class="content-section">
+                    <h2>🎉 Benvenuto in iGestione Rep 2026</h2>
+                    <p>Sistema innovativo di smistamento e monitoraggio interventi con Progressive Web App (PWA) completamente integrata.</p>
+                    
+                    <h3>✨ Nuove Funzionalità Implementate:</h3>
+                    <ul class="feature-list">
+                        <li><strong>Pop-up QR Code:</strong> Scansiona rapidamente per installare l'app su Android e iOS</li>
+                        <li><strong>Header Semplificato:</strong> Solo il pulsante QR Code per il download</li>
+                        <li><strong>Assistente Virtuale Potenziato:</strong> Form ingrandito con area chat ampia</li>
+                        <li><strong>Suggerimento Rapido Integrato:</strong> Accedi ai suggerimenti dall'assistente</li>
+                        <li><strong>Design Responsive:</strong> Perfetto su mobile, tablet e desktop</li>
+                        <li><strong>Accessibilità Completa:</strong> ARIA labels e supporto screen reader</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h2>🚀 Come Usare</h2>
+                    <h3>1. Scarica l'App</h3>
+                    <p>Clicca il pulsante "Scarica App" nell'header per aprire il modal QR Code. Puoi:</p>
+                    <ul class="feature-list">
+                        <li>Scansionare il codice QR con il tuo smartphone</li>
+                        <li>Cliccare direttamente il pulsante Android per Google Play Store</li>
+                        <li>Cliccare direttamente il pulsante iOS per App Store</li>
+                    </ul>
+
+                    <h3>2. Assistente Virtuale</h3>
+                    <p>Utilizza l'assistente virtuale in basso a destra per:</p>
+                    <ul class="feature-list">
+                        <li>Ricevere suggerimenti rapidi sul lavoro</li>
+                        <li>Inviare messaggi e ricevere risposte</li>
+                        <li>Consultare la cronologia della conversazione</li>
+                        <li>Chiudere facilmente con il pulsante X</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h2>📱 Architettura Tecnica</h2>
+                    <h3>Componenti:</h3>
+                    <ul class="feature-list">
+                        <li><strong>Header.vue:</strong> Intestazione con QR Code button</li>
+                        <li><strong>QRCodeModal.vue:</strong> Modal con QR code e pulsanti PWA</li>
+                        <li><strong>VirtualAssistant.vue:</strong> Pannello assistente con chat</li>
+                        <li><strong>pwaService.ts:</strong> Servizio gestione PWA</li>
+                    </ul>
+
+                    <h3>Dipendenze:</h3>
+                    <ul class="feature-list">
+                        <li>Vue 3</li>
+                        <li>qrcode.vue (generazione QR Code)</li>
+                        <li>TypeScript</li>
+                        <li>SCSS (styling avanzato)</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <!-- Virtual Assistant Panel -->
+        <transition name="slide-up">
+            <div v-if="isPanelOpen" class="virtual-assistant-panel">
+                <div class="assistant-header">
+                    <div class="assistant-title">
+                        <svg class="assistant-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                        <h2>Assistente Virtuale</h2>
+                    </div>
+                    <button class="close-btn" @click="closePanel" aria-label="Chiudi assistente virtuale" title="Chiudi (X)">×</button>
+                </div>
+
+                <div class="quick-suggestion-section">
+                    <button class="quick-suggestion-btn" @click="getQuickSuggestion" :disabled="isLoadingSuggestion">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        <span>{{ isLoadingSuggestion ? 'Caricamento...' : 'Suggerimento Rapido' }}</span>
+                    </button>
+                </div>
+
+                <div class="chat-section">
+                    <form @submit.prevent="sendMessage" class="chat-form">
+                        <textarea v-model="userMessage" placeholder="Scrivi il tuo messaggio o domanda qui..." class="message-input" @keydown.ctrl.enter="sendMessage" @keydown.meta.enter="sendMessage"></textarea>
+                        <button type="submit" class="send-btn" :disabled="!userMessage.trim()" aria-label="Invia messaggio">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16256983 C3.34915502,0.9054724 2.40734225,1.01609346 1.77946707,1.4873856 C0.994623095,2.11683127 0.837654326,3.20750074 1.15159189,3.99299767 L3.03521743,10.4339905 C3.03521743,10.5910879 3.34915502,10.7481853 3.50612381,10.7481853 L16.6915026,11.5336722 C16.6915026,11.5336722 17.1624089,11.5336722 17.1624089,12.0049643 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z"/></svg>
+                            <span>Invia</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div v-if="messages.length > 0" class="messages-area">
+                    <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">{{ message.text }}</div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- Assistant Toggle Button -->
+        <button v-if="!isPanelOpen" class="assistant-toggle-btn" @click="openPanel" aria-label="Apri assistente virtuale" title="Apri assistente virtuale">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        </button>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        const qrcodeVue = window.QrcodeVue;
+
+        createApp({
+            components: {
+                'qrcode-vue': qrcodeVue,
+            },
+            data() {
+                return {
+                    isQRModalOpen: false,
+                    isPanelOpen: false,
+                    userMessage: '',
+                    messages: [],
+                    isLoadingSuggestion: false,
+                    qrCodeUrl: 'https://app.example.com',
+                };
+            },
+            methods: {
+                openQRModal() {
+                    this.isQRModalOpen = true;
+                },
+                closeQRModal() {
+                    this.isQRModalOpen = false;
+                },
+                handleAndroidInstall() {
+                    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.example.app';
+                    window.open(playStoreUrl, '_blank');
+                    this.closeQRModal();
+                },
+                handleIOSInstall() {
+                    const appStoreUrl = 'https://apps.apple.com/app/id...';
+                    window.open(appStoreUrl, '_blank');
+                    this.closeQRModal();
+                },
+                openPanel() {
+                    this.isPanelOpen = true;
+                },
+                closePanel() {
+                    this.isPanelOpen = false;
+                },
+                async sendMessage() {
+                    if (!this.userMessage.trim()) return;
+
+                    this.messages.push({
+                        type: 'user',
+                        text: this.userMessage,
+                    });
+
+                    const message = this.userMessage;
+                    this.userMessage = '';
+
+                    try {
+                        const response = await this.callAssistantAPI(message);
+                        this.messages.push({
+                            type: 'assistant',
+                            text: response,
+                        });
+                    } catch (error) {
+                        this.messages.push({
+                            type: 'assistant',
+                            text: 'Scusa, si è verificato un errore. Riprova più tardi.',
+                        });
+                    }
+
+                    this.$nextTick(() => {
+                        const messagesArea = document.querySelector('.messages-area');
+                        if (messagesArea) {
+                            messagesArea.scrollTop = messagesArea.scrollHeight;
+                        }
+                    });
+                },
+                async getQuickSuggestion() {
+                    this.isLoadingSuggestion = true;
+                    try {
+                        const suggestion = await this.callQuickSuggestionAPI();
+                        this.messages.push({
+                            type: 'assistant',
+                            text: `💡 Suggerimento: ${suggestion}`,
+                        });
+                        this.$nextTick(() => {
+                            const messagesArea = document.querySelector('.messages-area');
+                            if (messagesArea) {
+                                messagesArea.scrollTop = messagesArea.scrollHeight;
+                            }
+                        });
+                    } catch (error) {
+                        this.messages.push({
+                            type: 'assistant',
+                            text: 'Non sono riuscito a generare un suggerimento in questo momento.',
+                        });
+                    } finally {
+                        this.isLoadingSuggestion = false;
+                    }
+                },
+                async callAssistantAPI(message) {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            const responses = [
+                                'Sono qui per aiutarti! Cosa posso fare per te?',
+                                'Ottima domanda! Posso guidarti attraverso questa operazione.',
+                                'Perfetto! Ti sto aiutando con la tua richiesta.',
+                                'Ho capito, fammi cercare le informazioni migliori per te.',
+                            ];
+                            resolve(responses[Math.floor(Math.random() * responses.length)]);
+                        }, 800);
+                    });
+                },
+                async callQuickSuggestionAPI() {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            const suggestions = [
+                                'Ricorda di controllare gli interventi scaduti oggi.',
+                                'Aggiorna lo stato di tutti i lavori in corso.',
+                                'Non dimenticare di compilare il rapporto giornaliero.',
+                                'Verifica i nuovi interventi assegnati.',
+                                'Consulta le tue statistiche di produttività.',
+                            ];
+                            resolve(suggestions[Math.floor(Math.random() * suggestions.length)]);
+                        }, 1000);
+                    });
+                },
+                goToStats() {
+                    alert('📊 Navigazione a Statistiche (funzionalità da implementare)');
+                },
+            },
+            mounted() {
+                console.log('🚀 iGestione Rep 2026 - App Loaded');
+                // Aggiungi un messaggio di benvenuto
+                this.messages.push({
+                    type: 'assistant',
+                    text: 'Benvenuto! Sono qui per aiutarti. Puoi chiedermi qualsiasi cosa o cliccare su "Suggerimento Rapido" per ricevere consigli.',
+                });
+            },
+        }).mount('#app');
+    </script>
+</body>
+</html>
